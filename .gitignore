@@ -1,0 +1,59 @@
+# IntelliJ IDEA / Android Studio
+*.iml
+.idea/
+!.idea/runConfigurations/
+!.idea/vsci.xml
+!.idea/dictionaries
+.gradle/
+local.properties
+.DS_Store
+
+# Build folders
+build/
+**/build/
+!src/**/build/
+
+# Kotlin / KMP
+.kotlin/
+.kotlin_js_compiler_dir/
+.kotlin_js_compiler/
+
+# Android
+.externalNativeBuild/
+.cxx/
+captures/
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+bin/
+gen/
+out/
+log/
+lint/
+
+# iOS / Xcode
+*.xcuserdatad
+*.xcworkspace/xcuserdata
+*.xcodeproj/xcuserdata
+*.xcworkspace/contents.xcworkspacedata
+**/xcshareddata/WorkspaceSettings.xcsettings
+DerivedData/
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# KMP specific build
+composeApp/build/
+iosApp/build/
+
+# Logs
+*.log
+build_log_*.txt
