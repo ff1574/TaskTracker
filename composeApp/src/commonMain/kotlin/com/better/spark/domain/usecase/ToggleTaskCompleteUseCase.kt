@@ -16,19 +16,7 @@ class ToggleTaskCompleteUseCase(
 ) {
     suspend operator fun invoke(taskId: String) {
         val task = taskRepository.getTaskById(taskId) ?: return
-        
-        val updatedTask = if (task.isCompleted) {
-            task.copy(
-                isCompleted = false,
-                completedAt = null
-            )
-        } else {
-            task.copy(
-                isCompleted = true,
-                completedAt = clock.now()
-            )
-        }
-        
+        val updatedTask = task.toggleComplete(clock.now())
         taskRepository.updateTask(updatedTask)
     }
 }

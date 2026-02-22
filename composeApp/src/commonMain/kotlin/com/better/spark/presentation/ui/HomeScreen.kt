@@ -1,6 +1,7 @@
 package com.better.spark.presentation.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,6 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -337,9 +341,12 @@ fun PremiumLegend(
 @Composable
 fun LegendStat(label: String, value: String, color: Color) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        androidx.compose.foundation.Canvas(modifier = Modifier.size(10.dp)) {
-            drawCircle(color = color)
-        }
+        Box(
+            modifier = androidx.compose.ui.Modifier
+                .size(10.dp)
+                .clip(RoundedCornerShape(2.dp))
+                .background(color)
+        )
         Spacer(modifier = Modifier.width(8.dp))
         Column {
             Text(
@@ -388,20 +395,21 @@ fun LifeCalendarCanvas(
             val row = i / cols
             val col = i % cols
             
-            val x = col * (effectiveDotSize + gap) + (effectiveDotSize / 2)
-            val y = row * (effectiveDotSize + gap) + (effectiveDotSize / 2)
-            
+            val dotLeft = col * (effectiveDotSize + gap)
+            val dotTop = row * (effectiveDotSize + gap)
+            val cornerRadius = effectiveDotSize * 0.25f
             val color = when {
                 i < weeksLived -> livedColor
                 i < (weeksLived + weeksSleep) -> sleepColor
                 i < (weeksLived + weeksSleep + weeksScreen) -> screenColor
                 else -> awakeColor
             }
-            
-            drawCircle(
+
+            drawRoundRect(
                 color = color,
-                radius = effectiveDotSize / 2,
-                center = Offset(x, y)
+                topLeft = Offset(dotLeft, dotTop),
+                size = androidx.compose.ui.geometry.Size(effectiveDotSize, effectiveDotSize),
+                cornerRadius = androidx.compose.ui.geometry.CornerRadius(cornerRadius, cornerRadius)
             )
         }
     }

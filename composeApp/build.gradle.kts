@@ -54,6 +54,9 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.serialization.json)
             implementation(libs.kotlinx.coroutines.core)
+
+            // Phosphor icon set for Compose Multiplatform
+            implementation(libs.phosphor.icon)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

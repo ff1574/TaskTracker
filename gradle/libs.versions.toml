@@ -20,6 +20,7 @@ kotlinx-coroutines = "1.10.1"
 compottie = "2.0.0-rc02"
 konfetti = "2.0.5"
 navigation-compose = "2.8.0-alpha10"
+phosphor-icon = "1.0.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -52,6 +53,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 compottie = { module = "io.github.alexzhirkevich:compottie", version.ref = "compottie" }
 konfetti = { module = "nl.dionsegijn:konfetti-compose", version.ref = "konfetti" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+phosphor-icon = { module = "com.adamglin:phosphor-icon", version.ref = "phosphor-icon" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
