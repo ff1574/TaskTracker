@@ -2,12 +2,16 @@ package com.better.spark.domain.usecase
 
 import com.better.spark.domain.model.Task
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.minus
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -55,8 +59,8 @@ class GetAllTasksUseCaseTest {
         repository.addTask(expiredTask)
         
         // Act
-        // The use case flow should trigger the reset logic on collection
-        val tasks = useCase().first()
+        // wait for second emission which reflects the reset
+        val tasks = useCase().take(2).toList().last()
         
         // Assert
         assertEquals(1, tasks.size)
@@ -86,6 +90,7 @@ class GetAllTasksUseCaseTest {
         repository.addTask(activeTask)
         
         // Act
+        // Unexpired tasks don't get reset, so we'll only get 1 emission immediately.
         val tasks = useCase().first()
         
         // Assert
@@ -93,34 +98,39 @@ class GetAllTasksUseCaseTest {
         val task = tasks[0]
         assertTrue(task.isCompleted, "Task should remain completed")
         assertNotNull(task.completedAt)
-        @Test
+    }
+
+    @Test
     fun `invoke should reset task on matching repeat day`() = runTest {
         // Arrange
         val repository = FakeTaskRepository()
         val useCase = GetAllTasksUseCase(repository, fakeClock)
         
-        // Fixed Time is Wed Feb 11 2026. ordinal=2 (Monday=0)
-        // Let's say task completed yesterday (Tue) and repeats on Wed (Today)
+        // Fixed Time is Wed Feb 11 2026 UTC, but locally it could be Thu Feb 12.
+        // We must calculate the correct local DayOfWeek for "today".
+        val tz = TimeZone.currentSystemDefault()
+        val nowDate = fixedTime.toLocalDateTime(tz).date
+        val todayIso = nowDate.dayOfWeek.ordinal + 1 // 1=Mon...
         
-        val yesterday = fixedTime.minus(1, kotlinx.datetime.DateTimeUnit.DAY, kotlinx.datetime.TimeZone.UTC)
+        val yesterday = fixedTime.minus(1, kotlinx.datetime.DateTimeUnit.DAY, tz)
         
         val task = Task(
             id = "1", 
-            title = "Wed Task", 
+            title = "Dynamic Day Task", 
             createdAt = yesterday,
             isCompleted = true,
             completedAt = yesterday,
-            repeatDays = listOf(3) // 3 = Wednesday (1=Mon, 2=Tue, 3=Wed)
+            repeatDays = listOf(todayIso) // Dynamically set to "today"
         )
         
         repository.addTask(task)
         
         // Act
-        val tasks = useCase().first()
+        // Since we explicitly made today a repeat day, it SHOULD trigger a reset and thus a 2nd emission.
+        val tasks = useCase().take(2).toList().last()
         
         // Assert
         assertEquals(1, tasks.size)
-        // Should reset because today is Wednesday and completion was Tuesday
         assertFalse(tasks[0].isCompleted, "Task should be reset")
     }
 
@@ -130,8 +140,12 @@ class GetAllTasksUseCaseTest {
         val repository = FakeTaskRepository()
         val useCase = GetAllTasksUseCase(repository, fakeClock)
         
-        // Completed TODAY (Wed)
-        // Should not reset until NEXT occurrence (Next Wed)
+        // Completed TODAY
+        // Should not reset until NEXT occurrence
+        
+        val tz = TimeZone.currentSystemDefault()
+        val nowDate = fixedTime.toLocalDateTime(tz).date
+        val todayIso = nowDate.dayOfWeek.ordinal + 1
         
         val task = Task(
             id = "1", 
@@ -139,7 +153,7 @@ class GetAllTasksUseCaseTest {
             createdAt = fixedTime,
             isCompleted = true,
             completedAt = fixedTime,
-            repeatDays = listOf(3) // 3 = Wednesday
+            repeatDays = listOf(todayIso)
         )
         
         repository.addTask(task)
@@ -151,5 +165,4 @@ class GetAllTasksUseCaseTest {
         assertEquals(1, tasks.size)
         assertTrue(tasks[0].isCompleted, "Task should stay completed today")
     }
-}
 }

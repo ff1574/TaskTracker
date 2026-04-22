@@ -64,6 +64,18 @@ object TaskAppearance {
         "Peace"          to "Mindfulness",
         "Eye"            to "Mindfulness",
         "Heartbeat"      to "Mindfulness",
+        // ── Bad Habits ────────────────────────────────────────────────────────
+        "Cigarette"      to "Habits",
+        "CigaretteSlash" to "Habits",
+        "Wine"           to "Habits",
+        "BeerBottle"     to "Habits",
+        "Martini"        to "Habits",
+        "Pill"           to "Habits",
+        "Syringe"        to "Habits",
+        "DeviceMobile"   to "Habits",
+        "Monitor"        to "Habits",
+        "Hamburger"      to "Habits",
+        "Pizza"          to "Habits",
         // ── Health & Fitness ───────────────────────────────────────────────────
         "Heart"          to "Health",
         "Barbell"        to "Health",
@@ -74,7 +86,6 @@ object TaskAppearance {
         "PersonSimpleWalk" to "Health",
         "Tooth"          to "Health",
         "FirstAid"       to "Health",
-        "Pill"           to "Health",
         "Bed"            to "Health",
         "ForkKnife"      to "Health",
         "Bowl"           to "Health",
@@ -92,7 +103,6 @@ object TaskAppearance {
         "Pencil"         to "Education",
         "Article"        to "Education",
         "Code"           to "Education",
-        "Monitor"        to "Education",
         "Laptop"         to "Education",
         "MagnifyingGlass" to "Education",
         "Lightbulb"      to "Education",
@@ -203,6 +213,17 @@ object TaskAppearance {
             "Peace"            -> PhosphorIcons.Regular.Peace
             "Eye"              -> PhosphorIcons.Regular.Eye
             "Heartbeat"        -> PhosphorIcons.Regular.Heartbeat
+            // Bad Habits
+            "Cigarette"        -> PhosphorIcons.Regular.Cigarette
+            "CigaretteSlash"   -> PhosphorIcons.Regular.CigaretteSlash
+            "Wine"             -> PhosphorIcons.Regular.Wine
+            "BeerBottle"       -> PhosphorIcons.Regular.BeerBottle
+            "Martini"          -> PhosphorIcons.Regular.Martini
+            "Pill"             -> PhosphorIcons.Regular.Pill
+            "Syringe"          -> PhosphorIcons.Regular.Syringe
+            "DeviceMobile"     -> PhosphorIcons.Regular.DeviceMobile
+            "Hamburger"        -> PhosphorIcons.Regular.Hamburger
+            "Pizza"            -> PhosphorIcons.Regular.Pizza
             // Health & Fitness
             "Heart"            -> PhosphorIcons.Regular.Heart
             "Barbell"          -> PhosphorIcons.Regular.Barbell
@@ -213,7 +234,6 @@ object TaskAppearance {
             "PersonSimpleWalk" -> PhosphorIcons.Regular.PersonSimpleWalk
             "Tooth"            -> PhosphorIcons.Regular.Tooth
             "FirstAid"         -> PhosphorIcons.Regular.FirstAid
-            "Pill"             -> PhosphorIcons.Regular.Pill
             "Bed"              -> PhosphorIcons.Regular.Bed
             "ForkKnife"        -> PhosphorIcons.Regular.ForkKnife
             "Bowl"             -> PhosphorIcons.Regular.BowlFood

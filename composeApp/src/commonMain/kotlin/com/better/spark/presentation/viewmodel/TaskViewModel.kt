@@ -28,18 +28,18 @@ class TaskViewModel(
     private val unarchiveTaskUseCase: UnarchiveTaskUseCase
 ) : ViewModel() {
 
-    /** All non-archived tasks (active list). */
+    /** All non-archived regular tasks (active list). */
     val uiState: StateFlow<TaskUiState> = getAllTasksUseCase()
-        .map { tasks -> TaskUiState.Success(tasks.filter { !it.isArchived }) as TaskUiState }
+        .map { tasks -> TaskUiState.Success(tasks.filter { !it.isArchived && !it.isBadHabit }) as TaskUiState }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = TaskUiState.Loading
         )
 
-    /** Archived tasks (for the archive sheet). */
-    val archivedUiState: StateFlow<List<Task>> = getAllTasksUseCase()
-        .map { tasks -> tasks.filter { it.isArchived } }
+    /** Archived regular tasks (for the archive sheet). */
+    val archivedTasks: StateFlow<List<Task>> = getAllTasksUseCase()
+        .map { tasks -> tasks.filter { it.isArchived && !it.isBadHabit } }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),

@@ -24,7 +24,7 @@ fun ArchiveSheet(
     viewModel: TaskViewModel,
     onDismiss: () -> Unit
 ) {
-    val archivedTasks by viewModel.archivedUiState.collectAsState()
+    val archivedTasks by viewModel.archivedTasks.collectAsState()
 
     val archivedOneTime = archivedTasks.filter { !it.isRepeatable }
     val archivedRepeatable = archivedTasks.filter { it.isRepeatable }

@@ -12,6 +12,10 @@ import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
+import com.better.spark.domain.model.BadHabitType
+import com.better.spark.domain.model.Task
+import com.better.spark.domain.usecase.GetBadHabitsUseCase
+
 sealed interface LifeCalendarState {
     data object Loading : LifeCalendarState
     data object Onboarding : LifeCalendarState
@@ -35,7 +39,8 @@ sealed interface LifeCalendarState {
 
 class LifeCalendarViewModel(
     private val settingsRepository: SettingsRepository,
-    private val clock: Clock
+    private val clock: Clock,
+    private val getBadHabitsUseCase: GetBadHabitsUseCase
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<LifeCalendarState>(LifeCalendarState.Loading)
@@ -47,20 +52,22 @@ class LifeCalendarViewModel(
 
     private fun loadData() {
         viewModelScope.launch {
-            val dob = settingsRepository.getDateOfBirth()
-            val gender = settingsRepository.getGender()
-            val sleep = settingsRepository.getSleepHours()
-            val screen = settingsRepository.getScreenTime()
-            
-            // Habits
-            val smoking = settingsRepository.getSmoking()
-            val alcohol = settingsRepository.getAlcohol()
-            val exercise = settingsRepository.getExercise()
+            getBadHabitsUseCase().collect { habits ->
+                val dob = settingsRepository.getDateOfBirth()
+                val gender = settingsRepository.getGender()
+                val sleep = settingsRepository.getSleepHours()
+                val screen = settingsRepository.getScreenTime()
+                
+                // Habits
+                val smoking = settingsRepository.getSmoking()
+                val alcohol = settingsRepository.getAlcohol()
+                val exercise = settingsRepository.getExercise()
 
-            if (dob == null || gender == null || sleep == null || screen == null || smoking == null || alcohol == null || exercise == null) {
-                _state.value = LifeCalendarState.Onboarding
-            } else {
-                calculateWeeks(dob, gender, sleep, screen, smoking, alcohol, exercise)
+                if (dob == null || gender == null || sleep == null || screen == null || smoking == null || alcohol == null || exercise == null) {
+                    _state.value = LifeCalendarState.Onboarding
+                } else {
+                    calculateWeeks(dob, gender, sleep, screen, smoking, alcohol, exercise, habits)
+                }
             }
         }
     }
@@ -102,7 +109,8 @@ class LifeCalendarViewModel(
         screenHours: Float,
         isSmoker: Boolean,
         alcoholDrinks: Int,
-        exerciseDays: Int
+        exerciseDays: Int,
+        habits: List<Task> = emptyList()
     ) {
         val now = clock.now().toEpochMilliseconds()
         val diffMillis = now - dobMillis
@@ -122,6 +130,37 @@ class LifeCalendarViewModel(
         if (exerciseDays < 2) expectancyYears -= 2 // Sedentary
         if (exerciseDays >= 4) expectancyYears += 2 // Active
         
+        // --- Gamified Bad Habits Reclaiming ---
+        val tz = TimeZone.currentSystemDefault()
+        val today = clock.now().toLocalDateTime(tz).date
+        
+        var reclaimedSmokingYears = 0
+        var reclaimedAlcoholYears = 0
+        var reclaimedScreenWeeks = 0
+
+        habits.forEach { habit ->
+            val streak = habit.getStreakDays(today)
+            if (streak > 0) {
+                when (habit.badHabitType) {
+                    BadHabitType.SMOKING -> {
+                        // Reclaim up to 10 years proportionally: 1 year reclaimed per 365 days of streak.
+                        reclaimedSmokingYears += (streak / 365.0).toInt().coerceAtMost(10)
+                    }
+                    BadHabitType.ALCOHOL -> {
+                        // Reclaim up to 3 years.
+                        reclaimedAlcoholYears += (streak / 365.0).toInt().coerceAtMost(3)
+                    }
+                    BadHabitType.SCREEN_TIME -> {
+                        // Screen time quitters save literal weeks they would have spent looking at screens
+                        reclaimedScreenWeeks += (streak / 7)
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        expectancyYears += reclaimedSmokingYears
+        expectancyYears += reclaimedAlcoholYears
         // -----------------------------
         
         val totalWeeks = expectancyYears * 52
@@ -132,7 +171,7 @@ class LifeCalendarViewModel(
         val sleepWeeks = (remainingWeeks * sleepRatio).toInt()
 
         val screenRatio = screenHours / 24f 
-        val screenWeeks = (remainingWeeks * screenRatio).toInt()
+        val screenWeeks = ((remainingWeeks * screenRatio).toInt() - reclaimedScreenWeeks).coerceAtLeast(0)
         
         val awakeWeeks = (remainingWeeks - sleepWeeks - screenWeeks).coerceAtLeast(0)
 

@@ -25,6 +25,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.better.spark.presentation.navigation.Screen
+import com.adamglin.PhosphorIcons
+import com.adamglin.phosphoricons.Regular
+import com.adamglin.phosphoricons.regular.Prohibit
 
 @Composable
 fun FloatingBottomBar(
@@ -54,6 +57,7 @@ fun FloatingBottomBar(
             val items = listOf(
                 NavigationItem("Home", Screen.Home.route, AppIcons.Home),
                 NavigationItem("Tasks", Screen.TaskList.route, AppIcons.TaskList),
+                NavigationItem("Quitting", Screen.BadHabits.route, PhosphorIcons.Regular.Prohibit),
                 NavigationItem("Inspire", Screen.Motivation.route, AppIcons.Motivation)
             )
 

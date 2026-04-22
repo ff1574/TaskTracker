@@ -14,7 +14,9 @@ import com.better.spark.presentation.ui.FloatingBottomBar
 import com.better.spark.presentation.ui.HomeScreen
 import com.better.spark.presentation.ui.MotivationScreen
 import com.better.spark.presentation.ui.TaskListScreen
+import com.better.spark.presentation.ui.BadHabitsScreen
 import com.better.spark.presentation.viewmodel.TaskViewModel
+import com.better.spark.presentation.viewmodel.BadHabitViewModel
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
@@ -23,6 +25,7 @@ import org.koin.compose.viewmodel.koinViewModel
 sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object TaskList : Screen("task_list")
+    data object BadHabits : Screen("bad_habits")
     data object Motivation : Screen("motivation")
     data object TaskDetail : Screen("task_detail/{taskId}") {
         fun createRoute(taskId: String) = "task_detail/$taskId"
@@ -68,9 +71,12 @@ fun TaskNavigation(
             
             composable(Screen.TaskList.route) {
                 val viewModel = koinViewModel<TaskViewModel>()
-                TaskListScreen(
-                    viewModel = viewModel
-                )
+                TaskListScreen(viewModel = viewModel)
+            }
+            
+            composable(Screen.BadHabits.route) {
+                val viewModel = koinViewModel<BadHabitViewModel>()
+                BadHabitsScreen(viewModel = viewModel)
             }
             
             composable(Screen.Motivation.route) {

@@ -4,10 +4,12 @@ import com.better.spark.domain.repository.TaskRepository
 import com.better.spark.domain.usecase.AddTaskUseCase
 import com.better.spark.domain.usecase.ArchiveTaskUseCase
 import com.better.spark.domain.usecase.GetAllTasksUseCase
+import com.better.spark.domain.usecase.GetBadHabitsUseCase
 import com.better.spark.domain.usecase.ToggleTaskCompleteUseCase
 import com.better.spark.domain.usecase.UpdateTaskUseCase
 import com.better.spark.domain.usecase.DeleteTaskUseCase
 import com.better.spark.domain.usecase.UnarchiveTaskUseCase
+import com.better.spark.presentation.viewmodel.BadHabitViewModel
 import com.better.spark.presentation.viewmodel.LifeCalendarViewModel
 import com.better.spark.presentation.viewmodel.TaskViewModel
 import kotlinx.datetime.Clock
@@ -38,6 +40,7 @@ val appModule = module {
     
     // Domain Layer - Use Cases
     singleOf(::GetAllTasksUseCase)
+    singleOf(::GetBadHabitsUseCase)
     singleOf(::AddTaskUseCase)
     singleOf(::ToggleTaskCompleteUseCase)
     singleOf(::UpdateTaskUseCase)
@@ -47,5 +50,6 @@ val appModule = module {
     
     // Presentation Layer - ViewModels
     viewModelOf(::TaskViewModel)
+    viewModelOf(::BadHabitViewModel)
     viewModelOf(::LifeCalendarViewModel)
 }
