@@ -3,6 +3,8 @@ package com.better.spark.presentation.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -17,6 +19,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.better.spark.domain.model.BadHabitType
 import com.better.spark.domain.model.Task
@@ -81,16 +85,24 @@ fun BadHabitDialog(
                 
                 // Habit Type Selection
                 Text("Select Category:", style = MaterialTheme.typography.labelLarge)
+                val chipScroll = rememberScrollState()
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(chipScroll),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     BadHabitType.entries.forEach { type ->
+                        val label = when (type) {
+                            BadHabitType.SMOKING -> "Smoking"
+                            BadHabitType.ALCOHOL -> "Alcohol"
+                            BadHabitType.SCREEN_TIME -> "Screen time"
+                            BadHabitType.CUSTOM -> "Custom"
+                        }
                         FilterChip(
                             selected = selectedType == type,
                             onClick = { selectedType = type },
-                            label = { Text(type.name.replace("_", " ")) },
-                            modifier = Modifier.weight(1f)
+                            label = { Text(label, maxLines = 1) }
                         )
                     }
                 }
@@ -223,7 +235,7 @@ fun BadHabitDialog(
                             OutlinedTextField(
                                 value = timeLostValue,
                                 onValueChange = { if (it.isEmpty() || it.toDoubleOrNull() != null) timeLostValue = it },
-                                label = { Text("Time lost (minutes)") },
+                                label = { Text("Time lost (minutes)", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                                 modifier = Modifier.weight(1f),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true,
@@ -232,7 +244,7 @@ fun BadHabitDialog(
                             OutlinedTextField(
                                 value = costValue,
                                 onValueChange = { if (it.isEmpty() || it.toDoubleOrNull() != null) costValue = it },
-                                label = { Text("Money lost") },
+                                label = { Text("Money lost", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                                 modifier = Modifier.weight(1f),
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true,
@@ -241,9 +253,10 @@ fun BadHabitDialog(
                             OutlinedTextField(
                                 value = currency,
                                 onValueChange = { currency = it },
-                                label = { Text("Unit") },
-                                modifier = Modifier.weight(0.5f),
+                                label = { Text("Unit", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                                modifier = Modifier.weight(1f),
                                 singleLine = true,
+                                textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
                                 shape = RoundedCornerShape(12.dp)
                             )
                         }
