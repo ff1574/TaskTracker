@@ -104,7 +104,7 @@ fun BadHabitsScreen(
         BadHabitDialog(
             task = selectedTask,
             onDismiss = { showDialog = false },
-            onConfirm = { title, desc, icon, color, type, cost, currency ->
+            onConfirm = { title, desc, icon, color, type, baseline, timeLost, cost, currency ->
                 if (selectedTask != null) {
                     val updatedTask = selectedTask!!.copy(
                         title = title,
@@ -112,6 +112,8 @@ fun BadHabitsScreen(
                         iconName = icon,
                         colorHex = color,
                         badHabitType = type,
+                        badHabitBaseline = baseline,
+                        timePerFailure = timeLost,
                         costPerFailure = cost,
                         costCurrency = currency
                     )
@@ -123,6 +125,8 @@ fun BadHabitsScreen(
                         description = desc,
                         isBadHabit = true,
                         badHabitType = type,
+                        badHabitBaseline = baseline,
+                        timePerFailure = timeLost,
                         costPerFailure = cost,
                         costCurrency = currency,
                         iconName = icon,
