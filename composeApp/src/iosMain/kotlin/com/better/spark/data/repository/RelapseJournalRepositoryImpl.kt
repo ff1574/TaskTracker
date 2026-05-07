@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import platform.Foundation.NSUserDefaults
+import platform.Foundation.removeObjectForKey
 
 class RelapseJournalRepositoryImpl : RelapseJournalRepository {
 
@@ -71,6 +72,11 @@ class RelapseJournalRepositoryImpl : RelapseJournalRepository {
 
     override suspend fun getEntryById(entryId: String): RelapseJournalEntry? {
         return _entriesFlow.value.find { it.id == entryId }
+    }
+
+    override suspend fun clearAll() = withContext(Dispatchers.IO) {
+        _entriesFlow.value = emptyList()
+        userDefaults.removeObjectForKey(KEY_ENTRIES)
     }
 
     private companion object {

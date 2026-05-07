@@ -78,6 +78,11 @@ class RelapseJournalRepositoryImpl(
         return _entriesFlow.value.find { it.id == entryId }
     }
 
+    override suspend fun clearAll() = withContext(Dispatchers.IO) {
+        _entriesFlow.value = emptyList()
+        prefs.edit { remove(KEY_ENTRIES) }
+    }
+
     private companion object {
         private const val KEY_ENTRIES = "key_relapse_journal_entries"
     }

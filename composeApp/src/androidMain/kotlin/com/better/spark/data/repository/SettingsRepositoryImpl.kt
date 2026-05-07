@@ -82,6 +82,10 @@ class SettingsRepositoryImpl(
         if (prefs.contains(KEY_EXERCISE)) prefs.getInt(KEY_EXERCISE, 3) else null
     }
 
+    override suspend fun clearAll() = withContext(Dispatchers.IO) {
+        prefs.edit { clear() }
+    }
+
     companion object {
         private const val KEY_DOB = "key_date_of_birth"
         private const val KEY_GENDER = "key_gender"

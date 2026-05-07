@@ -23,4 +23,7 @@ interface SettingsRepository {
     
     suspend fun saveExercise(daysPerWeek: Int)
     suspend fun getExercise(): Int?
+
+    /** Clears all locally stored app settings. */
+    suspend fun clearAll()
 }

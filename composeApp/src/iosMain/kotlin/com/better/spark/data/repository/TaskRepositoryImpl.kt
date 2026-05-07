@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import platform.Foundation.NSUserDefaults
+import platform.Foundation.removeObjectForKey
 
 /**
  * iOS implementation of TaskRepository using NSUserDefaults.
@@ -75,6 +76,11 @@ class TaskRepositoryImpl : TaskRepository {
 
     override suspend fun getTaskById(taskId: String): Task? {
         return _tasksFlow.value.find { it.id == taskId }
+    }
+
+    override suspend fun clearAll() = withContext(Dispatchers.IO) {
+        _tasksFlow.value = emptyList()
+        userDefaults.removeObjectForKey(KEY_TASKS)
     }
 
     companion object {

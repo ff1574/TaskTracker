@@ -44,4 +44,9 @@ class FakeTaskRepository : TaskRepository {
     override suspend fun getTaskById(taskId: String): Task? {
         return tasks.firstOrNull { it.id == taskId }
     }
+
+    override suspend fun clearAll() {
+        tasks.clear()
+        _tasksFlow.value = emptyList()
+    }
 }

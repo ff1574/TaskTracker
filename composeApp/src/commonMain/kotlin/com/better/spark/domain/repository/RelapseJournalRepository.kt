@@ -10,5 +10,8 @@ interface RelapseJournalRepository {
     suspend fun updateEntry(entry: RelapseJournalEntry)
     suspend fun deleteEntry(entryId: String)
     suspend fun getEntryById(entryId: String): RelapseJournalEntry?
+
+    /** Clears all locally stored relapse journal entries. */
+    suspend fun clearAll()
 }
 

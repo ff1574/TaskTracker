@@ -9,6 +9,7 @@ import com.better.spark.domain.usecase.ToggleTaskCompleteUseCase
 import com.better.spark.domain.usecase.UpdateTaskUseCase
 import com.better.spark.domain.usecase.DeleteTaskUseCase
 import com.better.spark.domain.usecase.UnarchiveTaskUseCase
+import com.better.spark.domain.usecase.ResetAppDataUseCase
 import com.better.spark.presentation.viewmodel.BadHabitViewModel
 import com.better.spark.presentation.viewmodel.LifeCalendarViewModel
 import com.better.spark.presentation.viewmodel.RelapseJournalViewModel
@@ -48,6 +49,7 @@ val appModule = module {
     singleOf(::DeleteTaskUseCase)
     singleOf(::ArchiveTaskUseCase)
     singleOf(::UnarchiveTaskUseCase)
+    singleOf(::ResetAppDataUseCase)
     
     // Presentation Layer - ViewModels
     viewModelOf(::TaskViewModel)

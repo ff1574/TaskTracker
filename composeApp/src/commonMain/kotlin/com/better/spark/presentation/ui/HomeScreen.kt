@@ -18,6 +18,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
@@ -39,7 +41,10 @@ import com.better.spark.presentation.viewmodel.TaskViewModel
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import com.better.spark.domain.usecase.ResetAppDataUseCase
+import kotlinx.coroutines.launch
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.compose.koinInject
 
 @Composable
 fun HomeScreen(
@@ -49,6 +54,8 @@ fun HomeScreen(
     val taskViewModel = koinViewModel<TaskViewModel>()
     val badHabitViewModel = koinViewModel<BadHabitViewModel>()
     val relapseJournalViewModel = koinViewModel<RelapseJournalViewModel>()
+    val resetAppDataUseCase = koinInject<ResetAppDataUseCase>()
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
 
     val taskState by taskViewModel.uiState.collectAsState()
     val habitState by badHabitViewModel.uiState.collectAsState()
@@ -59,6 +66,7 @@ fun HomeScreen(
     val todayStr = today.toString()
 
     var relapseDialogTask by remember { mutableStateOf<Task?>(null) }
+    var showResetConfirm by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     LaunchedEffect(resetKey) {
@@ -181,6 +189,13 @@ fun HomeScreen(
                     OutlinedButton(onClick = onOpenLifeCalendar, modifier = Modifier.fillMaxWidth()) {
                         Text("Open Life Calendar")
                     }
+                }
+
+                TextButton(
+                    onClick = { showResetConfirm = true },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Reset app data", color = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -317,6 +332,25 @@ fun HomeScreen(
                     notes = notes
                 )
                 relapseDialogTask = null
+            }
+        )
+    }
+
+    if (showResetConfirm) {
+        AlertDialog(
+            onDismissRequest = { showResetConfirm = false },
+            title = { Text("Reset app?") },
+            text = { Text("This will delete all tasks, bad habits, journals, and Life Calendar settings on this device.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showResetConfirm = false
+                        scope.launch { resetAppDataUseCase() }
+                    }
+                ) { Text("Reset", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetConfirm = false }) { Text("Cancel") }
             }
         )
     }

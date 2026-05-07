@@ -50,6 +50,16 @@ class FakeSettingsRepository : SettingsRepository {
     override suspend fun getAlcohol(): Int? = alcohol
     override suspend fun saveExercise(daysPerWeek: Int) { exercise = daysPerWeek }
     override suspend fun getExercise(): Int? = exercise
+
+    override suspend fun clearAll() {
+        dob = null
+        gender = null
+        sleep = null
+        screen = null
+        smoking = null
+        alcohol = null
+        exercise = null
+    }
 }
 
 class FakeTaskRepository : TaskRepository {

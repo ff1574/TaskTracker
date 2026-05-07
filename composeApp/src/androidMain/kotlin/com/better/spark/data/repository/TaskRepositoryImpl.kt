@@ -86,6 +86,11 @@ class TaskRepositoryImpl(
         return _tasksFlow.value.find { it.id == taskId }
     }
 
+    override suspend fun clearAll() = withContext(Dispatchers.IO) {
+        _tasksFlow.value = emptyList()
+        prefs.edit { remove(KEY_TASKS) }
+    }
+
     companion object {
         private const val KEY_TASKS = "key_tasks_list"
     }

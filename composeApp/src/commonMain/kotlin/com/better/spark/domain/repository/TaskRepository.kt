@@ -44,4 +44,7 @@ interface TaskRepository {
      * Gets a single task by ID.
      */
     suspend fun getTaskById(taskId: String): Task?
+
+    /** Clears all locally stored tasks (including bad habits). */
+    suspend fun clearAll()
 }
