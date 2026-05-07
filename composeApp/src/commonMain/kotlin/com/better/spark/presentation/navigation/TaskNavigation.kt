@@ -63,8 +63,6 @@ fun TaskNavigation(
                         return@FloatingBottomBar
                     }
                     navController.navigate(route) {
-                        // Pop up to the start destination of the graph to
-                        // avoid building up a large stack of destinations
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true
                         }

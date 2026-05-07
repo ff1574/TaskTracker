@@ -36,25 +36,50 @@ fun BadHabitsScreen(
     onOpenJournal: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val archivedHabits by viewModel.archivedHabits.collectAsState()
     val relapseJournalViewModel = koinViewModel<RelapseJournalViewModel>()
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
     var taskToRelapse by remember { mutableStateOf<Task?>(null) }
+    var showArchiveSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    selectedTask = null
-                    showDialog = true
-                },
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                shape = CircleShape
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
             ) {
-                Text("+", fontSize = 24.sp)
+                FloatingActionButton(
+                    onClick = { showArchiveSheet = true },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    shape = CircleShape,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = ArchiveIcon(),
+                        contentDescription = "Archive",
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
+
+                FloatingActionButton(
+                    onClick = {
+                        selectedTask = null
+                        showDialog = true
+                    },
+                    containerColor = MaterialTheme.colorScheme.errorContainer,
+                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                    shape = CircleShape
+                ) {
+                    Text("+", fontSize = 24.sp)
+                }
             }
         },
+        floatingActionButtonPosition = FabPosition.Center,
         containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Box(
@@ -105,6 +130,14 @@ fun BadHabitsScreen(
                 }
             }
         }
+    }
+
+    if (showArchiveSheet) {
+        BadHabitArchiveSheet(
+            archivedHabits = archivedHabits,
+            onRestore = { habitId -> viewModel.unarchiveBadHabit(habitId) },
+            onDismiss = { showArchiveSheet = false }
+        )
     }
 
     if (showDialog) {
@@ -172,6 +205,129 @@ fun BadHabitsScreen(
                 taskToRelapse = null
             }
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun BadHabitArchiveSheet(
+    archivedHabits: List<Task>,
+    onRestore: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+        containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 12.dp, bottom = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f))
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    "Archived bad habits",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    ) {
+        if (archivedHabits.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text("📦", style = MaterialTheme.typography.displaySmall)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Nothing archived yet",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                items(archivedHabits, key = { it.id }) { habit ->
+                    ArchivedHabitRow(
+                        habit = habit,
+                        onRestore = { onRestore(habit.id) }
+                    )
+                }
+                item { Spacer(modifier = Modifier.height(32.dp)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchivedHabitRow(
+    habit: Task,
+    onRestore: () -> Unit
+) {
+    val habitColor = TaskAppearance.getColor(habit.colorHex)
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        shape = RoundedCornerShape(10.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .clip(CircleShape)
+                    .background(habitColor)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = habit.title,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                if (habit.description.isNotBlank()) {
+                    Text(
+                        text = habit.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1
+                    )
+                }
+            }
+            TextButton(onClick = onRestore) {
+                Text(
+                    "Restore",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
     }
 }
 

@@ -45,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.better.spark.presentation.viewmodel.LifeCalendarState
 import com.better.spark.presentation.viewmodel.LifeCalendarViewModel
+import kotlin.math.roundToInt
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,8 +65,8 @@ fun LifeCalendarScreen(
 
     // Habits
     var isSmoker by remember { mutableStateOf(false) }
-    var alcoholDrinks by remember { mutableStateOf(0f) }
-    var exerciseDays by remember { mutableStateOf(3f) }
+    var alcoholDrinks by remember { mutableStateOf(0) }
+    var exerciseDays by remember { mutableStateOf(3) }
 
     var selectedSleep by remember { mutableStateOf(7.5f) }
     var selectedScreen by remember { mutableStateOf(4.0f) }
@@ -106,6 +107,12 @@ fun LifeCalendarScreen(
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.primary
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "This personalizes your Life Calendar. You can skip and come back anytime.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
@@ -114,6 +121,10 @@ fun LifeCalendarScreen(
                         }
                     ) {
                         Text("Start Setup")
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    TextButton(onClick = onBack) {
+                        Text("Skip for now")
                     }
                 }
 
@@ -134,8 +145,8 @@ fun LifeCalendarScreen(
                             selectedSleep = s.sleepHours
                             selectedScreen = s.screenHours
                             isSmoker = s.isSmoker
-                            alcoholDrinks = s.alcoholDrinks.toFloat()
-                            exerciseDays = s.exerciseDays.toFloat()
+                            alcoholDrinks = s.alcoholDrinks
+                            exerciseDays = s.exerciseDays
 
                             onboardingStep = 0
                             showOnboarding = true
@@ -177,8 +188,8 @@ fun LifeCalendarScreen(
                                         selectedSleep,
                                         selectedScreen,
                                         isSmoker,
-                                        alcoholDrinks.toInt(),
-                                        exerciseDays.toInt()
+                                        alcoholDrinks,
+                                        exerciseDays
                                     )
                                 }
                                 showOnboarding = false
@@ -238,43 +249,43 @@ fun LifeCalendarScreen(
                                 Text("Do you smoke?")
                             }
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text("Alcohol (Drinks/Week): ${alcoholDrinks.toInt()}")
+                            Text("Alcohol (Drinks/Week): $alcoholDrinks")
                             androidx.compose.material3.Slider(
-                                value = alcoholDrinks,
-                                onValueChange = { alcoholDrinks = it },
+                                value = alcoholDrinks.toFloat(),
+                                onValueChange = { v -> alcoholDrinks = v.roundToInt().coerceIn(0, 20) },
                                 valueRange = 0f..20f,
-                                steps = 19
+                                steps = 19 // 21 discrete values (0..20)
                             )
                         }
 
                         3 -> {
-                            Text("Exercise (Days/Week): ${exerciseDays.toInt()}")
+                            Text("Exercise (Days/Week): $exerciseDays")
                             Spacer(modifier = Modifier.height(16.dp))
                             androidx.compose.material3.Slider(
-                                value = exerciseDays,
-                                onValueChange = { exerciseDays = it },
+                                value = exerciseDays.toFloat(),
+                                onValueChange = { v -> exerciseDays = v.roundToInt().coerceIn(0, 7) },
                                 valueRange = 0f..7f,
-                                steps = 6
+                                steps = 6 // 8 discrete values (0..7)
                             )
                         }
 
                         4 -> {
-                            Text("Avg Sleep: $selectedSleep hours")
+                            Text("Avg Sleep: ${"%.1f".format(selectedSleep)} hours")
                             Spacer(modifier = Modifier.height(16.dp))
                             androidx.compose.material3.Slider(
                                 value = selectedSleep,
-                                onValueChange = { selectedSleep = it },
+                                onValueChange = { v -> selectedSleep = (v * 2f).roundToInt() / 2f },
                                 valueRange = 4f..12f,
                                 steps = 15
                             )
                         }
 
                         5 -> {
-                            Text("Avg Screen Time: $selectedScreen hours")
+                            Text("Avg Screen Time: ${"%.1f".format(selectedScreen)} hours")
                             Spacer(modifier = Modifier.height(16.dp))
                             androidx.compose.material3.Slider(
                                 value = selectedScreen,
-                                onValueChange = { selectedScreen = it },
+                                onValueChange = { v -> selectedScreen = (v * 2f).roundToInt() / 2f },
                                 valueRange = 0f..12f,
                                 steps = 23
                             )

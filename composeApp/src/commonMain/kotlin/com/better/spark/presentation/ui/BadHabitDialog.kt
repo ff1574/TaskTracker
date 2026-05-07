@@ -59,6 +59,8 @@ fun BadHabitDialog(
     var timeLostValue by remember { mutableStateOf(task?.timePerFailure?.toString() ?: "") }
     var costValue by remember { mutableStateOf(task?.costPerFailure?.toString() ?: "") }
     var currency by remember { mutableStateOf(task?.costCurrency ?: "$") }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showArchiveConfirm by remember { mutableStateOf(false) }
     
     // Auto-fill currency initially depending on region or default
     LaunchedEffect(selectedType) {
@@ -273,7 +275,7 @@ fun BadHabitDialog(
             ) {
                 // Delete
                 IconButton(
-                    onClick = { onDelete?.invoke() },
+                    onClick = { showDeleteConfirm = true },
                     enabled = task != null && onDelete != null
                 ) {
                     Icon(
@@ -286,7 +288,7 @@ fun BadHabitDialog(
                 }
                 // Archive
                 IconButton(
-                    onClick = { onArchive?.invoke() },
+                    onClick = { showArchiveConfirm = true },
                     enabled = task != null && onArchive != null
                 ) {
                     Icon(
@@ -348,6 +350,40 @@ fun BadHabitDialog(
         tonalElevation = 6.dp,
         shape = RoundedCornerShape(28.dp)
     )
+
+    if (showDeleteConfirm && task != null && onDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete habit?") },
+            text = { Text("“${task.title}” will be removed permanently.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        onDelete()
+                    }
+                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") } }
+        )
+    }
+
+    if (showArchiveConfirm && task != null && onArchive != null) {
+        AlertDialog(
+            onDismissRequest = { showArchiveConfirm = false },
+            title = { Text("Archive habit?") },
+            text = { Text("“${task.title}” will move to Archive and can be restored later.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showArchiveConfirm = false
+                        onArchive()
+                    }
+                ) { Text("Archive") }
+            },
+            dismissButton = { TextButton(onClick = { showArchiveConfirm = false }) { Text("Cancel") } }
+        )
+    }
 
     // Reusing the same color/icon picker modals...
     // Color Picker Modal

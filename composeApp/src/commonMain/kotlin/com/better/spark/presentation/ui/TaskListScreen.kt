@@ -36,9 +36,6 @@ import com.adamglin.PhosphorIcons
 import com.adamglin.phosphoricons.Regular
 import com.adamglin.phosphoricons.regular.*
 
-/**
- * Screen displaying the list of tasks.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
@@ -59,7 +56,6 @@ fun TaskListScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                // Archive FAB — bottom left
                 FloatingActionButton(
                     onClick = { showArchiveSheet = true },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -73,7 +69,6 @@ fun TaskListScreen(
                         modifier = Modifier.size(22.dp)
                     )
                 }
-                // Add Task FAB — bottom right (existing)
                 FloatingActionButton(
                     onClick = {
                         selectedTask = null
@@ -99,47 +94,46 @@ fun TaskListScreen(
                 is TaskUiState.Loading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
-                
+
                 is TaskUiState.Success -> {
-                    // Completed one-time tasks auto-move to archive — hide them here
                     val visibleTasks = state.tasks.filter { task ->
                         !task.isArchived && !(task.isCompleted && !task.isRepeatable)
                     }
-                    // Auto-archive newly completed one-time tasks
                     state.tasks
                         .filter { it.isCompleted && !it.isRepeatable && !it.isArchived }
                         .forEach { viewModel.archiveTask(it.id) }
 
-                    if (visibleTasks.isEmpty()) {
-                        EmptyState(modifier = Modifier.align(Alignment.Center))
-                    } else {
-                        TaskLazyList(
-                            tasks = visibleTasks,
-                            onToggleComplete = { viewModel.toggleTaskComplete(it) },
-                            onTaskClick = { task ->
-                                selectedTask = task
-                                showDialog = true
-                            }
-                        )
-                    }
-
-                    // Templates entry point (always visible at bottom)
-                    Box(
+                    Column(
                         modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                            .fillMaxSize()
+                            .padding(bottom = 96.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         OutlinedButton(
                             onClick = onOpenTemplates,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
                             shape = RoundedCornerShape(14.dp)
                         ) {
                             Text("Browse templates")
                         }
+
+                        if (visibleTasks.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                EmptyState()
+                            }
+                        } else {
+                            TaskLazyList(
+                                tasks = visibleTasks,
+                                onToggleComplete = { viewModel.toggleTaskComplete(it) },
+                                onTaskClick = { task ->
+                                    selectedTask = task
+                                    showDialog = true
+                                }
+                            )
+                        }
                     }
                 }
-                
+
                 is TaskUiState.Error -> {
                     Text(
                         text = state.message,
@@ -759,6 +753,8 @@ fun TaskDialog(
 
     // Drives the separate PastCompletionsDialog
     var showPastCompletions by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    var showArchiveConfirm by remember { mutableStateOf(false) }
     
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -906,15 +902,13 @@ fun TaskDialog(
             }
         },
         confirmButton = {
-            // Full-width icon bar: Delete | Archive | Past completions | Confirm
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Delete
                 IconButton(
-                    onClick = { onDelete?.invoke() },
+                    onClick = { showDeleteConfirm = true },
                     enabled = task != null && onDelete != null
                 ) {
                     Icon(
@@ -925,9 +919,8 @@ fun TaskDialog(
                                else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                     )
                 }
-                // Archive
                 IconButton(
-                    onClick = { onArchive?.invoke() },
+                    onClick = { showArchiveConfirm = true },
                     enabled = task != null && onArchive != null
                 ) {
                     Icon(
@@ -938,7 +931,6 @@ fun TaskDialog(
                                else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                     )
                 }
-                // Past completions (only enabled for specific-day tasks)
                 val hasPastCompletions = task != null &&
                     task.repeatDays != null && task.repeatDays.isNotEmpty()
                 IconButton(
@@ -953,7 +945,6 @@ fun TaskDialog(
                                else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                     )
                 }
-                // Confirm
                 IconButton(
                     onClick = {
                         if (title.isNotBlank()) {
@@ -986,6 +977,44 @@ fun TaskDialog(
         tonalElevation = 6.dp,
         shape = RoundedCornerShape(28.dp)
     )
+
+    if (showDeleteConfirm && task != null && onDelete != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirm = false },
+            title = { Text("Delete task?") },
+            text = { Text("“${task.title}” will be removed permanently.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteConfirm = false
+                        onDelete()
+                    }
+                ) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirm = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    if (showArchiveConfirm && task != null && onArchive != null) {
+        AlertDialog(
+            onDismissRequest = { showArchiveConfirm = false },
+            title = { Text("Archive task?") },
+            text = { Text("“${task.title}” will move to Archive and can be restored later.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showArchiveConfirm = false
+                        onArchive()
+                    }
+                ) { Text("Archive") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showArchiveConfirm = false }) { Text("Cancel") }
+            }
+        )
+    }
     
     // Color Picker Modal
     if (showColorPicker) {
