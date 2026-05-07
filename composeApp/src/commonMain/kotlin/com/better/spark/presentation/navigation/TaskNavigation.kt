@@ -4,6 +4,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -12,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.better.spark.presentation.ui.FloatingBottomBar
 import com.better.spark.presentation.ui.HomeScreen
+import com.better.spark.presentation.ui.LifeCalendarScreen
 import com.better.spark.presentation.ui.MotivationScreen
 import com.better.spark.presentation.ui.TaskListScreen
 import com.better.spark.presentation.ui.BadHabitsScreen
@@ -27,6 +31,7 @@ sealed class Screen(val route: String) {
     data object TaskList : Screen("task_list")
     data object BadHabits : Screen("bad_habits")
     data object Motivation : Screen("motivation")
+    data object LifeCalendar : Screen("life_calendar")
     data object TaskDetail : Screen("task_detail/{taskId}") {
         fun createRoute(taskId: String) = "task_detail/$taskId"
     }
@@ -38,12 +43,18 @@ fun TaskNavigation(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    var homeResetKey by remember { mutableIntStateOf(0) }
 
     Scaffold(
         bottomBar = {
             FloatingBottomBar(
                 currentRoute = currentRoute,
                 onNavigate = { route ->
+                    // Reselecting "Home" should reset the dashboard view.
+                    if (route == Screen.Home.route && currentRoute == Screen.Home.route) {
+                        homeResetKey++
+                        return@FloatingBottomBar
+                    }
                     navController.navigate(route) {
                         // Pop up to the start destination of the graph to
                         // avoid building up a large stack of destinations
@@ -66,7 +77,10 @@ fun TaskNavigation(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.Home.route) {
-                HomeScreen()
+                HomeScreen(
+                    resetKey = homeResetKey,
+                    onOpenLifeCalendar = { navController.navigate(Screen.LifeCalendar.route) }
+                )
             }
             
             composable(Screen.TaskList.route) {
@@ -81,6 +95,12 @@ fun TaskNavigation(
             
             composable(Screen.Motivation.route) {
                 MotivationScreen()
+            }
+
+            composable(Screen.LifeCalendar.route) {
+                LifeCalendarScreen(
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }
