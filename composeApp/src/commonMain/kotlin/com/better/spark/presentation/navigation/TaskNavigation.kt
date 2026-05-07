@@ -17,6 +17,7 @@ import com.better.spark.presentation.ui.FloatingBottomBar
 import com.better.spark.presentation.ui.HomeScreen
 import com.better.spark.presentation.ui.LifeCalendarScreen
 import com.better.spark.presentation.ui.MotivationScreen
+import com.better.spark.presentation.ui.ProgressScreen
 import com.better.spark.presentation.ui.RelapseJournalScreen
 import com.better.spark.presentation.ui.TaskListScreen
 import com.better.spark.presentation.ui.BadHabitsScreen
@@ -31,6 +32,7 @@ sealed class Screen(val route: String) {
     data object Home : Screen("home")
     data object TaskList : Screen("task_list")
     data object BadHabits : Screen("bad_habits")
+    data object Progress : Screen("progress")
     data object Motivation : Screen("motivation")
     data object LifeCalendar : Screen("life_calendar")
     data object RelapseJournal : Screen("relapse_journal/{badHabitId}") {
@@ -114,6 +116,10 @@ fun TaskNavigation(
                     badHabitId = habitId,
                     onBack = { navController.popBackStack() }
                 )
+            }
+
+            composable(Screen.Progress.route) {
+                ProgressScreen()
             }
         }
     }
