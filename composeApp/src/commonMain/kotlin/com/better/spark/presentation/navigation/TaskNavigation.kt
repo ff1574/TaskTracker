@@ -19,6 +19,7 @@ import com.better.spark.presentation.ui.LifeCalendarScreen
 import com.better.spark.presentation.ui.MotivationScreen
 import com.better.spark.presentation.ui.ProgressScreen
 import com.better.spark.presentation.ui.RelapseJournalScreen
+import com.better.spark.presentation.ui.TemplatesScreen
 import com.better.spark.presentation.ui.TaskListScreen
 import com.better.spark.presentation.ui.BadHabitsScreen
 import com.better.spark.presentation.viewmodel.TaskViewModel
@@ -38,6 +39,7 @@ sealed class Screen(val route: String) {
     data object RelapseJournal : Screen("relapse_journal/{badHabitId}") {
         fun createRoute(badHabitId: String) = "relapse_journal/$badHabitId"
     }
+    data object Templates : Screen("templates")
     data object TaskDetail : Screen("task_detail/{taskId}") {
         fun createRoute(taskId: String) = "task_detail/$taskId"
     }
@@ -87,7 +89,10 @@ fun TaskNavigation(
             
             composable(Screen.TaskList.route) {
                 val viewModel = koinViewModel<TaskViewModel>()
-                TaskListScreen(viewModel = viewModel)
+                TaskListScreen(
+                    viewModel = viewModel,
+                    onOpenTemplates = { navController.navigate(Screen.Templates.route) }
+                )
             }
             
             composable(Screen.BadHabits.route) {
@@ -120,6 +125,12 @@ fun TaskNavigation(
 
             composable(Screen.Progress.route) {
                 ProgressScreen()
+            }
+
+            composable(Screen.Templates.route) {
+                TemplatesScreen(
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

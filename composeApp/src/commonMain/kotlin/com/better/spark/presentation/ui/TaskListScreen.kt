@@ -42,7 +42,8 @@ import com.adamglin.phosphoricons.regular.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
-    viewModel: TaskViewModel
+    viewModel: TaskViewModel,
+    onOpenTemplates: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var selectedTask by remember { mutableStateOf<Task?>(null) }
@@ -120,6 +121,22 @@ fun TaskListScreen(
                                 showDialog = true
                             }
                         )
+                    }
+
+                    // Templates entry point (always visible at bottom)
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onOpenTemplates,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(14.dp)
+                        ) {
+                            Text("Browse templates")
+                        }
                     }
                 }
                 
