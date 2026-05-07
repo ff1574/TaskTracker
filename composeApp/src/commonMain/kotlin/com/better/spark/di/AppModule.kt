@@ -11,6 +11,7 @@ import com.better.spark.domain.usecase.DeleteTaskUseCase
 import com.better.spark.domain.usecase.UnarchiveTaskUseCase
 import com.better.spark.presentation.viewmodel.BadHabitViewModel
 import com.better.spark.presentation.viewmodel.LifeCalendarViewModel
+import com.better.spark.presentation.viewmodel.RelapseJournalViewModel
 import com.better.spark.presentation.viewmodel.TaskViewModel
 import kotlinx.datetime.Clock
 import org.koin.core.module.dsl.singleOf
@@ -52,4 +53,5 @@ val appModule = module {
     viewModelOf(::TaskViewModel)
     viewModelOf(::BadHabitViewModel)
     viewModelOf(::LifeCalendarViewModel)
+    viewModelOf(::RelapseJournalViewModel)
 }

@@ -21,18 +21,22 @@ import com.better.spark.domain.model.BadHabitType
 import com.better.spark.domain.model.Task
 import com.better.spark.presentation.model.TaskUiState
 import com.better.spark.presentation.viewmodel.BadHabitViewModel
+import com.better.spark.presentation.viewmodel.RelapseJournalViewModel
 import kotlinx.datetime.Clock
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.minus
 import kotlinx.datetime.toLocalDateTime
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BadHabitsScreen(
-    viewModel: BadHabitViewModel
+    viewModel: BadHabitViewModel,
+    onOpenJournal: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val relapseJournalViewModel = koinViewModel<RelapseJournalViewModel>()
     var selectedTask by remember { mutableStateOf<Task?>(null) }
     var showDialog by remember { mutableStateOf(false) }
     var taskToRelapse by remember { mutableStateOf<Task?>(null) }
@@ -78,6 +82,9 @@ fun BadHabitsScreen(
                                     task = task,
                                     onRelapse = { 
                                         taskToRelapse = task
+                                    },
+                                    onOpenJournal = {
+                                        onOpenJournal(task.id)
                                     },
                                     onClick = {
                                         selectedTask = task
@@ -152,8 +159,16 @@ fun BadHabitsScreen(
         RelapseAmountDialog(
             task = taskToRelapse!!,
             onDismiss = { taskToRelapse = null },
-            onConfirm = { amount ->
+            onConfirm = { amount, notes, triggers, mood, timestampMillis ->
                 viewModel.toggleRelapse(taskToRelapse!!.id, amount)
+                relapseJournalViewModel.addEntry(
+                    badHabitId = taskToRelapse!!.id,
+                    amount = amount,
+                    timestampMillis = timestampMillis,
+                    mood = mood,
+                    triggers = triggers,
+                    notes = notes
+                )
                 taskToRelapse = null
             }
         )
@@ -190,6 +205,7 @@ private fun EmptyHabitsState(modifier: Modifier = Modifier) {
 fun BadHabitItem(
     task: Task,
     onRelapse: () -> Unit,
+    onOpenJournal: () -> Unit,
     onClick: () -> Unit
 ) {
     val tz = TimeZone.currentSystemDefault()
@@ -315,6 +331,15 @@ fun BadHabitItem(
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold
                 )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            TextButton(
+                onClick = onOpenJournal,
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Journal")
             }
 
             Spacer(modifier = Modifier.height(16.dp))

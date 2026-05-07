@@ -17,6 +17,7 @@ import com.better.spark.presentation.ui.FloatingBottomBar
 import com.better.spark.presentation.ui.HomeScreen
 import com.better.spark.presentation.ui.LifeCalendarScreen
 import com.better.spark.presentation.ui.MotivationScreen
+import com.better.spark.presentation.ui.RelapseJournalScreen
 import com.better.spark.presentation.ui.TaskListScreen
 import com.better.spark.presentation.ui.BadHabitsScreen
 import com.better.spark.presentation.viewmodel.TaskViewModel
@@ -32,6 +33,9 @@ sealed class Screen(val route: String) {
     data object BadHabits : Screen("bad_habits")
     data object Motivation : Screen("motivation")
     data object LifeCalendar : Screen("life_calendar")
+    data object RelapseJournal : Screen("relapse_journal/{badHabitId}") {
+        fun createRoute(badHabitId: String) = "relapse_journal/$badHabitId"
+    }
     data object TaskDetail : Screen("task_detail/{taskId}") {
         fun createRoute(taskId: String) = "task_detail/$taskId"
     }
@@ -50,7 +54,6 @@ fun TaskNavigation(
             FloatingBottomBar(
                 currentRoute = currentRoute,
                 onNavigate = { route ->
-                    // Reselecting "Home" should reset the dashboard view.
                     if (route == Screen.Home.route && currentRoute == Screen.Home.route) {
                         homeResetKey++
                         return@FloatingBottomBar
@@ -61,10 +64,7 @@ fun TaskNavigation(
                         popUpTo(navController.graph.startDestinationId) {
                             saveState = true
                         }
-                        // Avoid multiple copies of the same destination when
-                        // reselecting the same item
                         launchSingleTop = true
-                        // Restore state when reselecting a previously selected item
                         restoreState = true
                     }
                 }
@@ -90,7 +90,12 @@ fun TaskNavigation(
             
             composable(Screen.BadHabits.route) {
                 val viewModel = koinViewModel<BadHabitViewModel>()
-                BadHabitsScreen(viewModel = viewModel)
+                BadHabitsScreen(
+                    viewModel = viewModel,
+                    onOpenJournal = { habitId ->
+                        navController.navigate(Screen.RelapseJournal.createRoute(habitId))
+                    }
+                )
             }
             
             composable(Screen.Motivation.route) {
@@ -99,6 +104,14 @@ fun TaskNavigation(
 
             composable(Screen.LifeCalendar.route) {
                 LifeCalendarScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.RelapseJournal.route) { backStackEntry ->
+                val habitId = backStackEntry.arguments?.getString("badHabitId") ?: return@composable
+                RelapseJournalScreen(
+                    badHabitId = habitId,
                     onBack = { navController.popBackStack() }
                 )
             }

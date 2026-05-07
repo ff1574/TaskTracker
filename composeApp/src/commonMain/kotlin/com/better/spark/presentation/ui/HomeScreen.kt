@@ -34,6 +34,7 @@ import com.better.spark.domain.model.BadHabitType
 import com.better.spark.domain.model.Task
 import com.better.spark.presentation.model.TaskUiState
 import com.better.spark.presentation.viewmodel.BadHabitViewModel
+import com.better.spark.presentation.viewmodel.RelapseJournalViewModel
 import com.better.spark.presentation.viewmodel.TaskViewModel
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -47,6 +48,7 @@ fun HomeScreen(
 ) {
     val taskViewModel = koinViewModel<TaskViewModel>()
     val badHabitViewModel = koinViewModel<BadHabitViewModel>()
+    val relapseJournalViewModel = koinViewModel<RelapseJournalViewModel>()
 
     val taskState by taskViewModel.uiState.collectAsState()
     val habitState by badHabitViewModel.uiState.collectAsState()
@@ -304,8 +306,16 @@ fun HomeScreen(
         RelapseAmountDialog(
             task = relapseDialogTask!!,
             onDismiss = { relapseDialogTask = null },
-            onConfirm = { amount ->
+            onConfirm = { amount, notes, triggers, mood, timestampMillis ->
                 badHabitViewModel.toggleRelapse(relapseDialogTask!!.id, amount)
+                relapseJournalViewModel.addEntry(
+                    badHabitId = relapseDialogTask!!.id,
+                    amount = amount,
+                    timestampMillis = timestampMillis,
+                    mood = mood,
+                    triggers = triggers,
+                    notes = notes
+                )
                 relapseDialogTask = null
             }
         )

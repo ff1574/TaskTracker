@@ -57,3 +57,6 @@ iosApp/build/
 # Logs
 *.log
 build_log_*.txt
+doc.md
+final_word_doc.md
+todo.md
